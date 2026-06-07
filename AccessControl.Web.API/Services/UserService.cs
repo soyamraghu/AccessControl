@@ -1,0 +1,69 @@
+﻿using AccessControl.Web.API.DBConfiguration;
+using AccessControl.Web.API.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace AccessControl.Web.API.Services
+{
+    public class UserService : IUserService
+    {
+        private readonly ApplicationDbContext _dbContext;
+        public UserService(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+        public async Task<User> CreateUserAsync(User user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            await _dbContext.users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            //Delete from User Where Id=1
+            //select * from User where Id=1
+            var user = _dbContext.users.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+            {
+                return false;
+
+            }
+            _dbContext.users.Remove(user);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            return await _dbContext.users.ToListAsync();
+        }
+
+        public async Task<User> GetUserByIdAsync(int id)
+        {
+            return await _dbContext.users.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<User> UpdateUserAsync(int id, User user)
+        {
+            var DBUser = _dbContext.users.FirstOrDefault(u => u.Id == id);
+            if (DBUser != null)
+            {
+                DBUser.Name = user.Name;
+                DBUser.Email = user.Email;
+                DBUser.Password = user.Password;
+                DBUser.Phone = user.Phone;
+                DBUser.Role = user.Role;
+                DBUser.IsBlocked = user.IsBlocked;
+                DBUser.IsActive = user.IsActive;
+
+            }
+            await _dbContext.SaveChangesAsync();
+            return user;
+        }
+    }
+}
