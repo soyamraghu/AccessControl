@@ -16,6 +16,7 @@ namespace AccessControl.Web.API.Controllers
             _roleService = roleService;
             _logger = logger;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllRoles()
         {
@@ -27,32 +28,41 @@ namespace AccessControl.Web.API.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Internal server error: {ex.Message}");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
 
             }
         }
+
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetRolesById(int id)
         {
+
+
             try
             {
                 if (id <= 0)
                 {
                     return BadRequest("Invalid user Id");
                 }
+
+                var roles = await _roleService.GetRolesByIdAsync(id);
+
+                _logger.LogInformation("Retrived role with id {Roleid}", id);
+
+                if (roles == null)
+                {
+                    return NotFound();
+                }
+                return Ok(roles);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server Error{ex.Message}");
             }
-            var roles = await _roleService.GetRolesByIdAsync(id);
-            _logger.LogInformation("Retrived role with id {Roleid}", id);
-            if (roles == null)
-            {
-                return NotFound();
-            }
-            return Ok(roles);
+
+
         }
         [HttpPost]
 

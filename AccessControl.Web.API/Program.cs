@@ -1,6 +1,11 @@
 using AccessControl.Web.API.DBConfiguration;
 using AccessControl.Web.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
+using System.Configuration;
+using System.Text;
 
 namespace AccessControl.Web.API
 {
@@ -24,6 +29,27 @@ namespace AccessControl.Web.API
 
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IRoleService, RolesService>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
+
+            var tokenKey = builder.Configuration.GetValue<string>("TokenKey");
+
+            var key = Encoding.ASCII.GetBytes(tokenKey);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateActor = false
+                };
+            });
+
 
             // Swagger Services
             builder.Services.AddEndpointsApiExplorer();
@@ -39,6 +65,8 @@ namespace AccessControl.Web.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
