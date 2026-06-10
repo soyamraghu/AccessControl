@@ -1,61 +1,48 @@
-﻿-- Insert Default Roles
+﻿MERGE INTO [Roles] AS Target
+USING
+(
+    VALUES
+        ('Admin', 'System Administrator'),
+        ('Super Admin', 'Full access to all modules and settings'),
+        ('Manager', 'Manages teams and operations'),
+        ('Team Lead', 'Leads and supervises team members'),
+        ('Sales Executive', 'Handles sales activities and customer interactions'),
+        ('Support Engineer', 'Provides application and technical support'),
+        ('Marketing Executive', 'Manages marketing campaigns and promotions'),
+        ('Dealer', 'Dealer portal access and management'),
+        ('Customer', 'Customer portal access'),
+        ('Viewer', 'Read-only access to the system')
+) AS Source (RoleName, Description)
+ON Target.RoleName = Source.RoleName
 
-IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleName = 'Admin')
-BEGIN
-    INSERT INTO Roles
+WHEN MATCHED THEN
+    UPDATE SET
+        Description = Source.Description,
+        IsActive = 1,
+        ModifiedBy = 'System',
+        ModifiedDate = GETDATE()
+
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT
     (
         RoleName,
         Description,
         IsActive,
         CreatedBy,
-        CreatedDate
+        CreatedDate,
+        ModifiedBy,
+        ModifiedDate
     )
     VALUES
     (
-        'Admin',
-        'Full system access',
+        Source.RoleName,
+        Source.Description,
         1,
+        'System',
+        GETDATE(),
         'System',
         GETDATE()
     );
-END
 
-IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleName = 'Manager')
-BEGIN
-    INSERT INTO Roles
-    (
-        RoleName,
-        Description,
-        IsActive,
-        CreatedBy,
-        CreatedDate
-    )
-    VALUES
-    (
-        'Manager',
-        'Manage users and reports',
-        1,
-        'System',
-        GETDATE()
-    );
-END
-
-IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleName = 'User')
-BEGIN
-    INSERT INTO Roles
-    (
-        RoleName,
-        Description,
-        IsActive,
-        CreatedBy,
-        CreatedDate
-    )
-    VALUES
-    (
-        'User',
-        'Limited system access',
-        1,
-        'System',
-        GETDATE()
-    );
-END
+-- Optional: End MERGE statement
+;

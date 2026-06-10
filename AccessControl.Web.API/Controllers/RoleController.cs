@@ -1,12 +1,13 @@
-﻿using AccessControl.Web.API.Models;
+﻿using AccessControl.Web.API.Helpers;
+using AccessControl.Web.API.Models;
 using AccessControl.Web.API.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccessControl.Web.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AccessControlAutherise]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
