@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Configuration;
 using System.Text;
 
@@ -53,7 +54,48 @@ namespace AccessControl.Web.API
 
             // Swagger Services
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "AccessControl.Web.API",
+                    Description = "AccessControl.Web.API",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "AccessControl.Web.API Service",
+                        Email = "contact@bdprasad.in",
+                        Url = new Uri("https://bdprasad.in")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "contact@bdprasad.in",
+                        Url = new Uri("https://bdprasad.in")
+                    }
+                });
+                c.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter the Authorization header using the Bearer scheme.",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                 {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Authorization"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+            });
 
             var app = builder.Build();
 
